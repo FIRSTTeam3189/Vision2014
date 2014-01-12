@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/ffmpeg-2.1.1-linux-x86_64.jar"/>
+	<classpathentry kind="lib" path="lib/ffmpeg-2.1.1-linux-x86.jar"/>
+	<classpathentry kind="lib" path="lib/ffmpeg-2.1.1-macosx-x86_64.jar"/>
+	<classpathentry kind="lib" path="lib/ffmpeg-2.1.1-windows-x86_64.jar"/>
+	<classpathentry kind="lib" path="lib/ffmpeg-2.1.1-windows-x86.jar"/>
+	<classpathentry kind="lib" path="lib/javacv.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Users/DevBo/Desktop/Logger.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
