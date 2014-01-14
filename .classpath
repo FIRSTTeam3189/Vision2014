@@ -8,7 +8,20 @@
 	<classpathentry kind="lib" path="lib/ffmpeg-2.1.1-windows-x86.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/Logger.jar"/>
-	<classpathentry kind="lib" path="lib/javacv.jar"/>
-	<classpathentry kind="lib" path="lib/javacpp.jar"/>
+	<classpathentry kind="lib" path="lib/javacv-windows-x86_64.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Runtime/opencv/build/x64/vc10/bin"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/javacv.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Runtime/opencv/build/x64/vc10/bin"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/javacpp.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Runtime/opencv/build/x64/vc10/bin"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -3,6 +3,10 @@ package edu.firstteam3189.vision2014;
 public class Main {
 	private static App app;
 	
+	/**
+	 * Mimi nina programu
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		app = new App();
 	}
