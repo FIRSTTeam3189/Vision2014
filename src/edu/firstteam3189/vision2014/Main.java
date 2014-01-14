@@ -4,7 +4,7 @@ public class Main {
 	private static App app;
 	
 	/**
-	 * Mimi nina programu
+	 * The Main method
 	 * @param args
 	 */
 	public static void main(String[] args) {

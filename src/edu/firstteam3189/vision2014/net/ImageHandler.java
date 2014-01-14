@@ -17,6 +17,9 @@ import com.sun.net.httpserver.HttpHandler;
 
 import edu.firstteam3189.vision2014.Constants;
 
+/**
+ * Unused!
+ */
 public class ImageHandler implements HttpHandler{
 	private static final Logger LOGGER = new Logger(ImageHandler.class);
 	

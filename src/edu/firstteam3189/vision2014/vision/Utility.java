@@ -1,4 +1,4 @@
-package firstteam3189.server.vision;
+package edu.firstteam3189.vision2014.vision;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

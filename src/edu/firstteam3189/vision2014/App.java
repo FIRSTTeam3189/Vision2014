@@ -10,13 +10,27 @@ import edu.firstteam3189.vision2014.vision.ImageDaemon;
 
 public class App {
 	
+	/**
+	 * The Image Daemon for the camera
+	 */
 	private ImageDaemon camera;
+	
+	/**
+	 * The Logger for the App class
+	 */
 	public static final Logger LOGGER = new Logger(App.class);
 	
+	/**
+	 * Is the server still running?
+	 */
 	private boolean running = true;
+	/**
+	 * The Threaded Server Daemon that takes commands from the robot
+	 */
 	private ServerDaemon server;
 	
 	public App(){
+		// load the Constants and start the Server Daemon
 		Constants.loadConstants();
 		camera = new ImageDaemon();
 		try {

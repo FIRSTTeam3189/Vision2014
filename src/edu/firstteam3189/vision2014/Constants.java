@@ -3,7 +3,7 @@ package edu.firstteam3189.vision2014;
 import com.googlecode.javacv.cpp.opencv_core.CvScalar;
 import static com.googlecode.javacv.cpp.opencv_core.cvScalar;
 
-import firstteam3189.server.vision.Utility;
+import edu.firstteam3189.vision2014.vision.Utility;
 import team3189.library.Logger.Logger;
 
 public class Constants {

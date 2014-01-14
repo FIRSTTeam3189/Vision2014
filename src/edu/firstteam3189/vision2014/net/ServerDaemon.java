@@ -93,6 +93,7 @@ public class ServerDaemon extends Thread{
 	
 	/**
 	 * the running method of the server daemon thread
+	 * Responds to commands from the robot
 	 */
 	@Override
 	public void run() {

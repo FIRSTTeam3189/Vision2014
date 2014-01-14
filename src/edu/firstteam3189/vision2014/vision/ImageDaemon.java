@@ -26,13 +26,39 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.CV_RETR_CCOMP;
 
 public class ImageDaemon extends Thread{
 	
+	/**
+	 * The Logger class for the ImageDaemon
+	 */
 	public static Logger logger = new Logger(ImageDaemon.class);
+	
+	/**
+	 * The last processed results from the camera
+	 */
 	private int lastProcess = 0;
 	
+	/**
+	 * The Canvas Frame showing the processed contours
+	 */
 	CanvasFrame canvas;
+	
+	/**
+	 * The Canvas Frame showing the raw image from the camera
+	 */
 	CanvasFrame debug;
+	
+	/**
+	 * The Minimum dimensions of the canvas frames
+	 */
 	Dimension minDim = new Dimension(640, 480);
+	
+	/**
+	 * The FFMpegFrameGrabber, Grabs the images from the camera
+	 */
 	FFmpegFrameGrabber grabber;
+	
+	/**
+	 * The Draw Color for the contour drawing
+	 */
 	private static final CvScalar color = CV_RGB(69, 42, 69);
 	
 	public ImageDaemon(){
@@ -61,6 +87,7 @@ public class ImageDaemon extends Thread{
 				debug.setSize(grabber.getImageWidth(), grabber.getImageHeight());
 				
 				if (image != null){
+					// Flip the image and process it. Then show frames on canvases.
 					cvFlip(image, image, 1);
 					canvas.setTitle("Camera is ready");
 					debug.setTitle("Camera is ready");
@@ -114,14 +141,29 @@ public class ImageDaemon extends Thread{
 		return rects;
 	}
 
+	/**
+	 * Returns the amount of contours found on the last process
+	 * @return
+	 */
 	public int getLastProcess() {
 		return lastProcess;
 	}
 
+	/**
+	 * Sets the amount of countours found on the last process.
+	 * @param lastProcess
+	 */
 	public void setLastProcess(int lastProcess) {
 		this.lastProcess = lastProcess;
 	}
 
+	/**
+	 * Does an RGB Threshold of the image
+	 * @param img The image to threshold
+	 * @param base The Start of the color range
+	 * @param end The End of the color range
+	 * @return The Thresholded image
+	 */
 	public static IplImage removeColor(IplImage img, CvScalar base, CvScalar end) {
 		IplImage data = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
 
@@ -130,6 +172,9 @@ public class ImageDaemon extends Thread{
 		return data;
 	}
 
+	/**
+	 * Processes images from the camera
+	 */
 	@Override
 	public void run() {
 		processImage();
