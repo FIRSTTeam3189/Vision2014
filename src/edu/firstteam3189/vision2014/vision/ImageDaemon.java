@@ -98,9 +98,11 @@ public class ImageDaemon extends Thread{
 					
 					size = findContours(image).size();
 					canvas.showImage(image);
+					image.release();
 				} else {
 					System.out.println("Image is null!");
 				}
+				
 				lastProcess = size;
 			}
 		} catch (Exception e) {
@@ -132,12 +134,13 @@ public class ImageDaemon extends Thread{
 						// convert to a local point type
 						points.add(new Point(vPoint.x(), vPoint.y()));
 					}
+					r.deallocate();
 				}
 			}
 		} catch (Throwable t) {
 			logger.error("Image Processor: Failed...", t);
 		}
-
+		mem.release();
 		return rects;
 	}
 
@@ -166,9 +169,8 @@ public class ImageDaemon extends Thread{
 	 */
 	public static IplImage removeColor(IplImage img, CvScalar base, CvScalar end) {
 		IplImage data = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-
 		cvInRangeS(img, base, end, data);
-
+		img.release();
 		return data;
 	}
 
