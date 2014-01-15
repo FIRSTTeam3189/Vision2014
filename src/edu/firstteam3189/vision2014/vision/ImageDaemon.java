@@ -110,7 +110,7 @@ public class ImageDaemon extends Thread{
 	}
 	
 	public static List<List<Point>> findContours(IplImage image) {
-		CvMemStorage mem = cvCreateMemStorage(0);
+		CvMemStorage mem = CvMemStorage.create();
 		CvSeq contours = new CvSeq();
 		List<List<Point>> rects = new ArrayList<List<Point>>();
 		try {
