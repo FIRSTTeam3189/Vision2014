@@ -77,14 +77,17 @@ public class ImageDaemon extends Thread{
 		int size = 0;
 		try {
 			grabber.start();
+			canvas.setSize(grabber.getImageWidth(), grabber.getImageHeight());
+			debug.setSize(grabber.getImageWidth(), grabber.getImageHeight());
 			
 			while(true){
 				
 				IplImage image = null;
-				image = grabber.grab();
-				
-				canvas.setSize(grabber.getImageWidth(), grabber.getImageHeight());
-				debug.setSize(grabber.getImageWidth(), grabber.getImageHeight());
+				if(grabber == null){
+					System.out.println("grabber is null");
+				} else {
+					image = grabber.grab();
+				}
 				
 				if (image != null){
 					// Flip the image and process it. Then show frames on canvases.
@@ -98,7 +101,7 @@ public class ImageDaemon extends Thread{
 					
 					size = findContours(image).size();
 					canvas.showImage(image);
-					image.release();
+					cvReleaseImage(image);
 				} else {
 					System.out.println("Image is null!");
 				}
@@ -170,7 +173,6 @@ public class ImageDaemon extends Thread{
 	public static IplImage removeColor(IplImage img, CvScalar base, CvScalar end) {
 		IplImage data = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
 		cvInRangeS(img, base, end, data);
-		img.release();
 		return data;
 	}
 
