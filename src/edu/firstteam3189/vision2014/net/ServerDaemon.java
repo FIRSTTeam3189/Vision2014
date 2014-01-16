@@ -14,6 +14,7 @@ public class ServerDaemon extends Thread{
 	
 	public static final int REQUEST_NUMBER_OF_HOTZONES_FROM_ROBOT = 69;
 	public static final int REQUEST_DEATH_FROM_ROBOT = 666;
+	public static final int REQUEST_DISCONNECT_FROM_ROBOT = 14;
 	
 	/**
 	 * LOGGER for putting out error messages
@@ -97,11 +98,11 @@ public class ServerDaemon extends Thread{
 	 */
 	@Override
 	public void run() {
-		
-		acceptClient();
-		
-		try{
-			while(client.isConnected()) {
+		while (server != null && server.isBound()) {
+			acceptClient();
+			
+			try{
+				while(client.isConnected()) {
 					if(canRecieveMessage()) {
 						int command = reciveMessage();
 						if(command == REQUEST_NUMBER_OF_HOTZONES_FROM_ROBOT){
@@ -109,39 +110,40 @@ public class ServerDaemon extends Thread{
 							sendMessage(data);
 						} else if(command == REQUEST_DEATH_FROM_ROBOT) {
 							System.exit(0);
+						} else if (command == REQUEST_DISCONNECT_FROM_ROBOT) {
+							closeClient();
 						} else {
 							
 						}
 						
 					}
+					
+				}
+			} catch(IOException e){
+				LOGGER.error("Cannot recive command!", e);
 				
+				closeClient();
+				
+			}finally {
+				closeClient();
 			}
-		} catch(IOException e){
-			LOGGER.error("Cannot recive command!", e);
-			
-			closeConnections();
-			
-		}finally {
-			closeConnections();
 		}
 	}
 
 	/**
 	 * close the input and output streams and the client
-	 * then nullifies all aboves
+	 * then nullifies all above
 	 */
-	private void closeConnections() {
-		try {
-			is.close();
-			os.close();
-			client.close();
-		} catch (IOException e) {
-			LOGGER.error("Unable to close connections!", e);
+	private void closeClient () {
+		if (client != null && client.isConnected()) {
+			try {
+				is.close();
+				os.close();
+				client.close();
+			} catch (IOException e) {
+				LOGGER.error("Could not close client!", e);
+			}
 		}
-		
-		is = null;
-		os = null;
-		client = null;
 	}
 
 	/**
@@ -163,5 +165,5 @@ public class ServerDaemon extends Thread{
 			}
 		}
 	}
-
+	
 }
