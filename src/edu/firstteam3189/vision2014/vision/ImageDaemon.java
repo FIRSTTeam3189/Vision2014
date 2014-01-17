@@ -34,7 +34,7 @@ public class ImageDaemon extends Thread{
 	/**
 	 * The last processed results from the camera
 	 */
-	private int lastProcess = 0;
+	private static int lastProcess = 0;
 	
 	/**
 	 * The Canvas Frame showing the processed contours
@@ -70,24 +70,27 @@ public class ImageDaemon extends Thread{
 		debug.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		debug.setMinimumSize(minDim);
 		debug.setTitle("Loading....");
-		grabber = new FFmpegFrameGrabber("http://10.31.89.11/mjpg/video.mjpg");
+		
 	}
 	
 	public int processImage(){
 		int size = 0;
+		grabber = new FFmpegFrameGrabber("http://10.31.89.11/mjpg/video.mjpg");
 		try {
 			grabber.start();
 			canvas.setSize(grabber.getImageWidth(), grabber.getImageHeight());
 			debug.setSize(grabber.getImageWidth(), grabber.getImageHeight());
-			
 			while(true){
-				
+				System.out.println("ran");
 				IplImage image = null;
-				if(grabber == null){
-					System.out.println("grabber is null");
-				} else {
+				if(grabber != null){
 					image = grabber.grab();
+				}else{
+					System.out.println("nulled");
+					image = null;
+					grabber = null;
 				}
+					
 				
 				if (image != null){
 					// Flip the image and process it. Then show frames on canvases.
@@ -104,6 +107,7 @@ public class ImageDaemon extends Thread{
 					cvReleaseImage(image);
 				} else {
 					System.out.println("Image is null!");
+//					grabber = null;
 				}
 				
 				lastProcess = size;

@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import edu.firstteam3189.vision2014.Main;
+import edu.firstteam3189.vision2014.Manager;
 import team3189.library.Logger.Logger;
 
 public class ServerDaemon extends Thread{
@@ -106,7 +107,7 @@ public class ServerDaemon extends Thread{
 					if(canRecieveMessage()) {
 						int command = reciveMessage();
 						if(command == REQUEST_NUMBER_OF_HOTZONES_FROM_ROBOT){
-							int data = Main.getApp().getHotzones();
+							int data = Manager.getHotzones();
 							sendMessage(data);
 						} else if(command == REQUEST_DEATH_FROM_ROBOT) {
 							System.exit(0);

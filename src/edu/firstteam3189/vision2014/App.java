@@ -10,10 +10,7 @@ import edu.firstteam3189.vision2014.vision.ImageDaemon;
 
 public class App {
 	
-	/**
-	 * The Image Daemon for the camera
-	 */
-	private ImageDaemon camera;
+	
 	
 	/**
 	 * The Logger for the App class
@@ -24,33 +21,16 @@ public class App {
 	 * Is the server still running?
 	 */
 	private boolean running = true;
-	/**
-	 * The Threaded Server Daemon that takes commands from the robot
-	 */
-	private ServerDaemon server;
+	
+	private Manager manager;
 	
 	public App(){
 		// load the Constants and start the Server Daemon
 		Constants.loadConstants();
-		camera = new ImageDaemon();
-		try {
-			server = new ServerDaemon();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		run();
+		manager = new Manager();
+		manager.start();
 	}
 	
-	public void run () {
-		camera.start();
-		if (server != null) {
-			server.start();
-		}
-	}
-	
-	public int getHotzones(){
-		return camera.getLastProcess();
-	}
 	
 	public void kill(){
 		running = false;
