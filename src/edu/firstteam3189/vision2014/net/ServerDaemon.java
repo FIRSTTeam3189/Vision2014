@@ -9,6 +9,7 @@ import java.net.Socket;
 
 import edu.firstteam3189.vision2014.Main;
 import edu.firstteam3189.vision2014.Manager;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import team3189.library.Logger.Logger;
 
 public class ServerDaemon extends Thread{
@@ -25,37 +26,16 @@ public class ServerDaemon extends Thread{
 	/**
 	 * The port to listen for connections 
 	 */
-	private static final int PORT = 1180;
-	
-	/**
-	 * The  server socket to accept sockets
-	 */
-	private ServerSocket server;
-	
-	/**
-	 * The robot socket
-	 */
-	private Socket client;
-	
-	/**
-	 * The Data stream to receive input
-	 */
-	private DataInputStream is;
-	
-	/**
-	 * The Data stream to send results on
-	 */
-	private DataOutputStream os;
+	private static final String Adress = "10.31.89.2";
+        
+        private NetworkTable table;
 	
 	/**
 	 * Creates the server daemon that receives socket connections and sends results
 	 * @throws IOException
 	 */
 	public ServerDaemon() throws IOException {
-		server = new ServerSocket(PORT);
-		client = null;
-		is = null;
-		os = null;
+		
 	}
 	
 	/**
@@ -63,9 +43,9 @@ public class ServerDaemon extends Thread{
 	 * @param message the string message to send
 	 * @throws IOException
 	 */
-	public void sendMessage(int message) throws IOException {
-		if(os != null) {
-			os.writeInt(message);
+	public void sendMessage(int message) {
+		if(table != null) {
+			table.putNumber("client", message);
 		}
 	}
 	
@@ -74,11 +54,12 @@ public class ServerDaemon extends Thread{
 	 * @return if you can
 	 * @throws IOException
 	 */
-	public boolean canRecieveMessage() throws IOException {
-		if(is == null) {
+	public boolean canRecieveMessage() {
+		if(table == null) {
 			return false;
 		}
-		return is.available() > 0;
+                
+		return true;
 	}
 	
 	/**
@@ -86,11 +67,11 @@ public class ServerDaemon extends Thread{
 	 * @return the returned message
 	 * @throws IOException
 	 */
-	public int reciveMessage() throws IOException {
-		if(is == null) {
+	public int reciveMessage() {
+		if(table == null) {
 			return 0;
 		}
-		return is.readInt();
+		return (int) table.getNumber("robot");
 	}
 	
 	/**
@@ -99,36 +80,37 @@ public class ServerDaemon extends Thread{
 	 */
 	@Override
 	public void run() {
-		while (server != null && server.isBound()) {
-			acceptClient();
-			
-			try{
-				while(client.isConnected()) {
-					if(canRecieveMessage()) {
-						int command = reciveMessage();
-						if(command == REQUEST_NUMBER_OF_HOTZONES_FROM_ROBOT){
-							int data = Manager.getHotzones();
-							sendMessage(data);
-						} else if(command == REQUEST_DEATH_FROM_ROBOT) {
-							System.exit(0);
-						} else if (command == REQUEST_DISCONNECT_FROM_ROBOT) {
-							closeClient();
-						} else {
-							
-						}
-						
-					}
-					
-				}
-			} catch(IOException e){
-				LOGGER.error("Cannot recive command!", e);
-				
-				closeClient();
-				
-			}finally {
-				closeClient();
-			}
-		}
+            startClient();
+		while (table != null) {
+                    
+                    if(table.isConnected()){
+                        try {
+                            System.out.println("asdfghj");
+                                if(canRecieveMessage()) {
+                                    int command = reciveMessage();
+
+                                    if(command == REQUEST_NUMBER_OF_HOTZONES_FROM_ROBOT){
+                                            int data = Manager.getHotzones();
+                                            sendMessage(data);
+                                    } else if(command == REQUEST_DEATH_FROM_ROBOT) {
+                                            System.exit(0);
+                                    } else if (command == REQUEST_DISCONNECT_FROM_ROBOT) {
+                                            closeClient();
+                                    } else {
+
+                                    }
+
+                                }
+
+                        }finally{
+                        
+                        }
+		}else{
+                       table = NetworkTable.getTable("data");
+                    }
+                
+
+}
 	}
 
 	/**
@@ -136,35 +118,15 @@ public class ServerDaemon extends Thread{
 	 * then nullifies all above
 	 */
 	private void closeClient () {
-		if (client != null && client.isConnected()) {
-			try {
-				is.close();
-				os.close();
-				client.close();
-			} catch (IOException e) {
-				LOGGER.error("Could not close client!", e);
-			}
+		if (table != null && table.isConnected()) {
+			table = null;
 		}
 	}
-
-	/**
-	 * accepts the client from server socket
-	 * sets up io streams
-	 * upon io exception, nullifies client, is, os
-	 */
-	private void acceptClient() {
-		while(client == null || client.isClosed()){
-			try {
-				client = server.accept();
-				is = new DataInputStream(client.getInputStream());
-				os = new DataOutputStream(client.getOutputStream());
-			} catch (IOException e) {
-				LOGGER.error("Could not accept Client!", e);
-				client = null;
-				is = null;
-				os = null;
-			}
-		}
-	}
+        
+        private void startClient(){
+            NetworkTable.setClientMode();
+            NetworkTable.setIPAddress(Adress);
+            table = NetworkTable.getTable("data");
+        }
 	
 }

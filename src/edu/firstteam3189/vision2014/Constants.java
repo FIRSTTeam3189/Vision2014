@@ -27,13 +27,14 @@ public class Constants {
 	 */
 	public static double TOLERANCE = Math.PI / 70;
 	public static int WRITING_PROCESSED_IMAGES = 0;
-	private static int BLUE_HIGH = 255;
+        
+	private static int BLUE_HIGH = 90;
 	private static int BLUE_LOW = 0;
 	
 	private static int GREEN_HIGH = 255;
-	private static int GREEN_LOW = 200;
+	private static int GREEN_LOW = 120;
 
-	private static int RED_HIGH = 70;
+	private static int RED_HIGH = 40;
 	private static int RED_LOW = 0;
 	
 	public static CvScalar base = cvScalar(Constants.BLUE_LOW, Constants.GREEN_LOW, Constants.RED_LOW, 0);

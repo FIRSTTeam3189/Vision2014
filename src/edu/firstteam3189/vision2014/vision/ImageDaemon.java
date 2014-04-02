@@ -81,7 +81,6 @@ public class ImageDaemon extends Thread{
 			canvas.setSize(grabber.getImageWidth(), grabber.getImageHeight());
 			debug.setSize(grabber.getImageWidth(), grabber.getImageHeight());
 			while(true){
-				System.out.println("ran");
 				IplImage image = null;
 				if(grabber != null){
 					image = grabber.grab();
