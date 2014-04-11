@@ -7,16 +7,15 @@ import java.util.regex.Pattern;
 /**
  * Unused
  */
-public class ImageFileFilter implements FilenameFilter{
+public class ImageFileFilter implements FilenameFilter {
 	private Pattern patt;
-	
-	public ImageFileFilter(){
+
+	public ImageFileFilter() {
 		patt = Pattern.compile("[processed ]*image.*\\.jpg");
 	}
+
 	@Override
 	public boolean accept(File dir, String name) {
-		// TODO Auto-generated method stub
 		return patt.matcher(name).matches();
 	}
-
 }

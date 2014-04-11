@@ -1,14 +1,16 @@
 package edu.firstteam3189.vision2014;
 
-import com.googlecode.javacv.cpp.opencv_core.CvScalar;
 import static com.googlecode.javacv.cpp.opencv_core.cvScalar;
-
-import edu.firstteam3189.vision2014.vision.Utility;
 import team3189.library.Logger.Logger;
 
+import com.googlecode.javacv.cpp.opencv_core.CvScalar;
+
+import edu.firstteam3189.vision2014.vision.Utility;
+
 public class Constants {
-	private static final Logger logger = new Logger(Constants.class);
+	public static CvScalar base = cvScalar(Constants.BLUE_LOW, Constants.GREEN_LOW, Constants.RED_LOW, 0);
 	public static int BLUR = 20;
+	public static CvScalar end = cvScalar(Constants.BLUE_HIGH, Constants.GREEN_HIGH, Constants.RED_HIGH, 0);
 	public static float GOAL_ONE_RATIO = 1.1f;
 	public static float GOAL_THREE_RATIO = 3.1f;
 	public static float GOAL_TOLERANCE = .5f;
@@ -26,19 +28,18 @@ public class Constants {
 	 * Angle Tolerance in radians
 	 */
 	public static double TOLERANCE = Math.PI / 70;
+
 	public static int WRITING_PROCESSED_IMAGES = 0;
-        
 	private static int BLUE_HIGH = 90;
+
 	private static int BLUE_LOW = 0;
-	
 	private static int GREEN_HIGH = 255;
+
 	private static int GREEN_LOW = 120;
+	private static final Logger logger = new Logger(Constants.class);
 
 	private static int RED_HIGH = 40;
 	private static int RED_LOW = 0;
-	
-	public static CvScalar base = cvScalar(Constants.BLUE_LOW, Constants.GREEN_LOW, Constants.RED_LOW, 0);
-	public static CvScalar end = cvScalar(Constants.BLUE_HIGH, Constants.GREEN_HIGH, Constants.RED_HIGH, 0);
 
 	public static void loadConstants() {
 		RED_LOW = Utility.getIntFromProperty("redLow", RED_LOW);

@@ -36,8 +36,8 @@ public class Utility {
 	}
 
 	/**
-	 * Gets an integer from the vision properties list by the indicated key,
-	 * uses default value if non-existent or invalid
+	 * Gets an integer from the vision properties list by the indicated key, uses default value if non-existent or
+	 * invalid
 	 * 
 	 * @param key
 	 *            The key
@@ -66,8 +66,7 @@ public class Utility {
 	}
 
 	/**
-	 * If min < max, then checks if value is within that range, if min > max,
-	 * then checks if its not within that range
+	 * If min < max, then checks if value is within that range, if min > max, then checks if its not within that range
 	 * 
 	 * @param value
 	 *            value of number

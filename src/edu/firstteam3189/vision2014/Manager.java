@@ -5,19 +5,22 @@ import java.io.IOException;
 import edu.firstteam3189.vision2014.net.ServerDaemon;
 import edu.firstteam3189.vision2014.vision.ImageDaemon;
 
-public class Manager extends Thread{
-	
+public class Manager extends Thread {
 	/**
 	 * The Image Daemon for the camera
 	 */
 	private static ImageDaemon camera;
-	
+
 	/**
 	 * The Threaded Server Daemon that takes commands from the robot
 	 */
 	private static ServerDaemon server;
-	
-	public Manager(){
+
+	public static int getHotzones() {
+		return camera.getLastProcess();
+	}
+
+	public Manager() {
 		camera = new ImageDaemon();
 		try {
 			server = new ServerDaemon();
@@ -25,19 +28,15 @@ public class Manager extends Thread{
 			e.printStackTrace();
 		}
 	}
-	
-	public static int getHotzones(){
-		return camera.getLastProcess();
-	}
-	
+
 	@Override
 	public void run() {
 		camera.start();
 		if (server != null) {
 			server.start();
 		}
-		while(true){
-			if(!camera.isAlive()){
+		while (true) {
+			if (!camera.isAlive()) {
 				camera = new ImageDaemon();
 				camera.start();
 			}
@@ -48,5 +47,4 @@ public class Manager extends Thread{
 			}
 		}
 	}
-
 }
