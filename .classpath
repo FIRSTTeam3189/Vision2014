@@ -23,5 +23,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Runtime/opencv/build/x64/vc10/bin"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="var" path="SUNSPOTFRCSDK/desktop-lib/networktables-desktop.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
