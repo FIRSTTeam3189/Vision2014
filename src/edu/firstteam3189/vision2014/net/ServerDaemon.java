@@ -10,7 +10,9 @@ public class ServerDaemon extends Thread {
 	public static final int REQUEST_DEATH_FROM_ROBOT = 666;
 	public static final int REQUEST_DISCONNECT_FROM_ROBOT = 14;
 	public static final int REQUEST_NUMBER_OF_HOTZONES_FROM_ROBOT = 69;
-
+	private static final String NETWORK_COMMAND = "robot";
+	private static final String NETWORK_TABLE = "data";
+	
 	/**
 	 * The port to listen for connections
 	 */
@@ -55,7 +57,7 @@ public class ServerDaemon extends Thread {
 					}
 				}
 			} else {
-				table = NetworkTable.getTable("data");
+				table = NetworkTable.getTable(NETWORK_TABLE);
 			}
 		}
 	}
@@ -89,7 +91,7 @@ public class ServerDaemon extends Thread {
 		int message = 0;
 
 		if (canReceiveMessage()) {
-			message = (int) table.getNumber("robot");
+			message = (int) table.getNumber(NETWORK_COMMAND);
 		}
 
 		return message;
@@ -111,6 +113,6 @@ public class ServerDaemon extends Thread {
 	private void startClient() {
 		NetworkTable.setClientMode();
 		NetworkTable.setIPAddress(Address);
-		table = NetworkTable.getTable("data");
+		table = NetworkTable.getTable(NETWORK_TABLE);
 	}
 }
