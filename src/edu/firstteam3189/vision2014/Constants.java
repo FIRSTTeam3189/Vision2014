@@ -63,7 +63,7 @@ public class Constants {
 		logger.info("redHigh: " + RED_HIGH);
 		logger.info("blueHigh: " + BLUE_HIGH);
 		logger.info("greenHigh: " + GREEN_HIGH);
-		logger.info("blur" + BLUR);
-		logger.info("tolerance" + TOLERANCE);
+		logger.info("blur: " + BLUR);
+		logger.info("tolerance: " + TOLERANCE);
 	}
 }

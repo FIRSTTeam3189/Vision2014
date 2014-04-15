@@ -127,6 +127,7 @@ public class ImageDaemon extends Thread {
 	Dimension minDim = new Dimension(640, 480);
 
 	public ImageDaemon() {
+		super("Image Daemon");
 		canvas = new CanvasFrame("title");
 		canvas.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		canvas.setMinimumSize(minDim);

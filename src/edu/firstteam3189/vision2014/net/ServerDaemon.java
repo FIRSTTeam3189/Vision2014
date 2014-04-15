@@ -9,19 +9,21 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 public class ServerDaemon extends Thread {
 	public static final int REQUEST_DEATH_FROM_ROBOT = 666;
 	public static final int REQUEST_DISCONNECT_FROM_ROBOT = 14;
+	public static final int REQUEST_NOTHING = 99;
 	public static final int REQUEST_NUMBER_OF_HOTZONES_FROM_ROBOT = 69;
-	private static final String NETWORK_COMMAND = "robot";
-	private static final String NETWORK_TABLE = "data";
-	
+
 	/**
 	 * The port to listen for connections
 	 */
 	private static final String Address = "10.31.89.2";
-
 	/**
 	 * The Logger class for the ImageDaemon
 	 */
 	private static final Logger logger = new Logger(ServerDaemon.class);
+
+	private static final String NETWORK_COMMAND = "robot";
+
+	private static final String NETWORK_TABLE = "data";
 
 	private NetworkTable table;
 
@@ -30,7 +32,8 @@ public class ServerDaemon extends Thread {
 	 * 
 	 * @throws IOException
 	 */
-	public ServerDaemon() throws IOException {
+	public ServerDaemon() {
+		super("Server Daemon");
 	}
 
 	/**
@@ -44,16 +47,26 @@ public class ServerDaemon extends Thread {
 				// logger.debug("Table is available.");
 				if (canReceiveMessage()) {
 					int command = receiveMessage();
-
-					if (command == REQUEST_NUMBER_OF_HOTZONES_FROM_ROBOT) {
+					switch (command) {
+					case REQUEST_NUMBER_OF_HOTZONES_FROM_ROBOT:
 						int data = Manager.getHotzones();
 						sendMessage(data);
-					} else if (command == REQUEST_DEATH_FROM_ROBOT) {
+						break;
+
+					case REQUEST_DEATH_FROM_ROBOT:
 						System.exit(0);
-					} else if (command == REQUEST_DISCONNECT_FROM_ROBOT) {
+						break;
+
+					case REQUEST_DISCONNECT_FROM_ROBOT:
 						closeClient();
-					} else {
+						break;
+
+					case REQUEST_NOTHING:
+						break;
+
+					default:
 						logger.error("Invalid command (ignored): " + command);
+						break;
 					}
 				}
 			} else {
@@ -88,10 +101,10 @@ public class ServerDaemon extends Thread {
 	 * @throws IOException
 	 */
 	private int receiveMessage() {
-		int message = 0;
+		int message = REQUEST_NOTHING;
 
 		if (canReceiveMessage()) {
-			message = (int) table.getNumber(NETWORK_COMMAND);
+			message = (int) table.getNumber(NETWORK_COMMAND, REQUEST_NOTHING);
 		}
 
 		return message;
