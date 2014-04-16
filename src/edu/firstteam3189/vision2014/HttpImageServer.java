@@ -1,9 +1,11 @@
 package edu.firstteam3189.vision2014;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 
 import team3189.library.Logger.Logger;
@@ -28,15 +30,23 @@ public class HttpImageServer {
 
 	/**
 	 * This method constructs a new image server.
+	 * 
+	 * @param queueImages
 	 */
-	public HttpImageServer() {
-		startImageServer();
+	public HttpImageServer(BlockingQueue<File> queueImages) {
+		startImageServer(queueImages);
+	}
+
+	public void close() {
+		httpServer.stop(5);
 	}
 
 	/**
 	 * This method starts an HTTP server to process images being sent to the server on the root.
+	 * 
+	 * @param queueImages
 	 */
-	private void startImageServer() {
+	private void startImageServer(BlockingQueue<File> queueImages) {
 		try {
 			// determine the address on which the server is going to be listening
 			InetAddress inetAddress = InetAddress.getByName(LOCAL_ADDRESS);
@@ -48,7 +58,7 @@ public class HttpImageServer {
 			httpServer.setExecutor(Executors.newCachedThreadPool());
 
 			// add a handler for the root context (i.e. all traffic)
-			HttpHandler imageHandler = new ImageHandler();
+			HttpHandler imageHandler = new ImageHandler(queueImages);
 			httpServer.createContext("/", imageHandler);
 
 			// fire up the server

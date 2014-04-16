@@ -1,28 +1,12 @@
 package edu.firstteam3189.vision2014.vision;
 
-import static com.googlecode.javacpp.Loader.sizeof;
-import static com.googlecode.javacv.cpp.opencv_core.CV_RGB;
-import static com.googlecode.javacv.cpp.opencv_core.IPL_DEPTH_8U;
-import static com.googlecode.javacv.cpp.opencv_core.cvCreateImage;
-import static com.googlecode.javacv.cpp.opencv_core.cvDrawContours;
-import static com.googlecode.javacv.cpp.opencv_core.cvFlip;
-import static com.googlecode.javacv.cpp.opencv_core.cvGetSeqElem;
-import static com.googlecode.javacv.cpp.opencv_core.cvGetSize;
-import static com.googlecode.javacv.cpp.opencv_core.cvInRangeS;
-import static com.googlecode.javacv.cpp.opencv_core.cvPoint;
 import static com.googlecode.javacv.cpp.opencv_core.cvReleaseImage;
-import static com.googlecode.javacv.cpp.opencv_imgproc.CV_BLUR;
-import static com.googlecode.javacv.cpp.opencv_imgproc.CV_CHAIN_APPROX_SIMPLE;
-import static com.googlecode.javacv.cpp.opencv_imgproc.CV_POLY_APPROX_DP;
-import static com.googlecode.javacv.cpp.opencv_imgproc.CV_RETR_CCOMP;
-import static com.googlecode.javacv.cpp.opencv_imgproc.cvApproxPoly;
-import static com.googlecode.javacv.cpp.opencv_imgproc.cvFindContours;
-import static com.googlecode.javacv.cpp.opencv_imgproc.cvSmooth;
+import static com.googlecode.javacv.cpp.opencv_highgui.cvLoadImage;
 
 import java.awt.Dimension;
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import javax.swing.JFrame;
 
@@ -30,108 +14,134 @@ import team3189.library.Logger.Logger;
 
 import com.googlecode.javacv.CanvasFrame;
 import com.googlecode.javacv.FFmpegFrameGrabber;
-import com.googlecode.javacv.FrameGrabber.Exception;
-import com.googlecode.javacv.cpp.opencv_core.CvContour;
-import com.googlecode.javacv.cpp.opencv_core.CvMemStorage;
-import com.googlecode.javacv.cpp.opencv_core.CvPoint;
-import com.googlecode.javacv.cpp.opencv_core.CvScalar;
-import com.googlecode.javacv.cpp.opencv_core.CvSeq;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 
-import edu.firstteam3189.vision2014.Constants;
+import edu.firstteam3189.vision2014.HttpImageServer;
 
 public class ImageDaemon extends Thread {
 	/**
-	 * The Logger class for the ImageDaemon
+	 * This interface is used to abstract between active camera capture and passive camera capture.
 	 */
-	public static Logger logger = new Logger(ImageDaemon.class);
+	private interface Camera {
+		void close();
+
+		/**
+		 * This method gets the next available image to process.
+		 * 
+		 * @throws Exception
+		 */
+		IplImage getImage() throws Exception;
+
+		/**
+		 * This method is used to initialize the camera capture process.
+		 * 
+		 * @throws Exception
+		 */
+		void init() throws Exception;
+	}
 
 	/**
-	 * The Draw Color for the contour drawing
+	 * This class is used to determine what type of camera capture is happening.
 	 */
-	private static final CvScalar color = CV_RGB(69, 42, 69);
+	private class CameraCapture implements Camera {
+		/** The FFMpegFrameGrabber, Grabs the images from the camera. */
+		private FFmpegFrameGrabber grabber;
+
+		public CameraCapture() {
+			grabber = new FFmpegFrameGrabber("http://10.31.89.11/mjpg/video.mjpg");
+		}
+
+		@Override
+		public void close() {
+		}
+
+		@Override
+		public IplImage getImage() throws Exception {
+			return grabber.grab();
+		}
+
+		/**
+		 * This method is used to initialize the camera capture process.
+		 * 
+		 * @throws Exception
+		 */
+		@Override
+		public void init() throws Exception {
+			grabber.start();
+		}
+	}
+
+	/**
+	 * This class is used to capture images being broadcast by the camera.
+	 */
+	private class HttpServerCameraCapture implements Camera {
+		/** This member is the server that receives images from the camera. */
+		private HttpImageServer httpImageServer;
+
+		/** This member holds the list of images to be processed. */
+		private BlockingQueue<File> queueImages = new ArrayBlockingQueue<>(20);
+
+		@Override
+		public void close() {
+			httpImageServer.close();
+		}
+
+		@Override
+		public IplImage getImage() throws Exception {
+			File file = queueImages.take();
+
+			LOGGER.info("Processing image file: " + file);
+
+			return cvLoadImage(file.getAbsolutePath());
+		}
+
+		@Override
+		public void init() {
+			httpImageServer = new HttpImageServer(queueImages);
+		}
+	}
+
+	/**
+	 * The Logger class for the ImageDaemon
+	 */
+	public static final Logger logger = new Logger(ImageDaemon.class);
 
 	/**
 	 * The last processed results from the camera
 	 */
 	private static int lastProcess = 0;
 
-	public static List<List<Point>> findContours(IplImage image) {
-		CvMemStorage mem = CvMemStorage.create();
-		CvSeq contours = new CvSeq();
-		List<List<Point>> rects = new ArrayList<List<Point>>();
-		try {
-			cvSmooth(image, image, CV_BLUR, Constants.BLUR);
+	private static final Logger LOGGER = new Logger(ImageDaemon.class);
 
-			cvFindContours(image, mem, contours, sizeof(CvContour.class), CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE,
-					cvPoint(0, 0));
+	/** This member holds a configuration element used to indicate if camera capture is active or passive. */
+	private boolean active = false;
 
-			if (!contours.isNull()) {
-				for (; contours != null; contours = contours.h_next()) {
-					cvDrawContours(image, contours, color, color, -1, 1, 8);
-					CvSeq r = cvApproxPoly(contours, sizeof(CvContour.class), mem, CV_POLY_APPROX_DP, 2, 0);
-					List<Point> points = new ArrayList<Point>();
-					rects.add(points);
-					for (int p = 0; p < r.total(); ++p) {
-						// create a point from the pointer, because you have to
-						CvPoint vPoint = new CvPoint(cvGetSeqElem(r, p));
-
-						// convert to a local point type
-						points.add(new Point(vPoint.x(), vPoint.y()));
-					}
-					r.deallocate();
-				}
-			}
-		} catch (Throwable t) {
-			logger.error("Image Processor: Failed...", t);
-		}
-		mem.release();
-		return rects;
-	}
-
-	/**
-	 * Does an RGB Threshold of the image
-	 * 
-	 * @param img
-	 *            The image to threshold
-	 * @param base
-	 *            The Start of the color range
-	 * @param end
-	 *            The End of the color range
-	 * @return The Thresholded image
-	 */
-	public static IplImage removeColor(IplImage img, CvScalar base, CvScalar end) {
-		IplImage data = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-		cvInRangeS(img, base, end, data);
-		return data;
-	}
+	/** This member holds the camera being used to capture the images. */
+	private Camera camera;
 
 	/**
 	 * The Canvas Frame showing the processed contours
 	 */
-	CanvasFrame canvas;
+	private CanvasFrame canvas;
 
 	/**
 	 * The Canvas Frame showing the raw image from the camera
 	 */
-	CanvasFrame debug;
-
-	/**
-	 * The FFMpegFrameGrabber, Grabs the images from the camera
-	 */
-	FFmpegFrameGrabber grabber;
+	private CanvasFrame debug;
 
 	/**
 	 * The Minimum dimensions of the canvas frames
 	 */
-	Dimension minDim = new Dimension(640, 480);
+	private Dimension minDim = new Dimension(640, 480);
 
 	public ImageDaemon() {
 		super("Image Daemon");
+
 		canvas = new CanvasFrame("title");
 		canvas.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		canvas.setMinimumSize(minDim);
 		canvas.setTitle("Loading....");
+
 		debug = new CanvasFrame("title");
 		debug.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		debug.setMinimumSize(minDim);
@@ -149,43 +159,31 @@ public class ImageDaemon extends Thread {
 
 	public int processImage() {
 		int size = 0;
-		grabber = new FFmpegFrameGrabber("http://10.31.89.11/mjpg/video.mjpg");
 		try {
-			grabber.start();
-			canvas.setSize(grabber.getImageWidth(), grabber.getImageHeight());
-			debug.setSize(grabber.getImageWidth(), grabber.getImageHeight());
+			camera.init();
 			while (true) {
-				IplImage image = null;
-				if (grabber != null) {
-					image = grabber.grab();
-				} else {
-					logger.debug("Grabber was nulled");
-					image = null;
-					grabber = null;
-				}
-
+				IplImage image = camera.getImage();
 				if (image != null) {
-					// Flip the image and process it. Then show frames on canvases.
-					cvFlip(image, image, 1);
-					canvas.setTitle("Camera is ready");
-					debug.setTitle("Camera is ready");
+					ImageProcessor imageProcessor = new ImageProcessor(image);
 
+					// Flip the image and process it. Then show frames on canvases.
+					// cvFlip(image, image, 1);
+
+					debug.setTitle("Camera is ready");
 					debug.showImage(image);
 
-					image = removeColor(image, Constants.base, Constants.end);
+					canvas.setTitle("Camera is ready");
+					canvas.showImage(imageProcessor.getProcessed());
 
-					size = findContours(image).size();
-					canvas.showImage(image);
 					cvReleaseImage(image);
 				} else {
 					logger.info("Image is null!");
-					// grabber = null;
 				}
 
 				lastProcess = size;
 			}
 		} catch (Exception e) {
-			logger.error(e.toString());
+			logger.error("Error capturing image.", e);
 		}
 		return size;
 	}
@@ -195,9 +193,18 @@ public class ImageDaemon extends Thread {
 	 */
 	@Override
 	public void run() {
+		// allocate the image capture processes
+		if (active) {
+			camera = new CameraCapture();
+		} else {
+			camera = new HttpServerCameraCapture();
+		}
+
+		// process the images
 		processImage();
 
 		// close the windows that were presumably opened
+		camera.close();
 		canvas.dispose();
 		debug.dispose();
 	}

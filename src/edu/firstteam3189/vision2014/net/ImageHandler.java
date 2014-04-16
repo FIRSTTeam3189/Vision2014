@@ -10,6 +10,8 @@ import java.net.HttpURLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import team3189.library.Logger.Logger;
 
@@ -19,15 +21,20 @@ import com.sun.net.httpserver.HttpHandler;
 
 public class ImageHandler implements HttpHandler {
 	private static final String HEADER_FILENAME = "Content-disposition";
-	private static final String HEADER_SIZE = "Content-length";
 	private static final Logger LOGGER = new Logger(ImageHandler.class);
 
 	private File imageDirectory;
 
+	/** This member holds the list of images to be processed. */
+	private BlockingQueue<File> queueImages;
+
 	/**
 	 * This method constructs a new instance, initializing storage folder based on the current date.
+	 * 
+	 * @param queueImages
 	 */
-	public ImageHandler() {
+	public ImageHandler(BlockingQueue<File> queueImages) {
+		this.queueImages = queueImages;
 		Date now = new Date();
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
 		imageDirectory = new File("images", formatter.format(now));
@@ -64,6 +71,8 @@ public class ImageHandler implements HttpHandler {
 					// write the image to a file
 					InputStream body = exchange.getRequestBody();
 					copy(body, imageFile);
+
+					queueImages.put(imageFile);
 				}
 
 				close(exchange, "Finished processing.");
@@ -71,6 +80,8 @@ public class ImageHandler implements HttpHandler {
 				// just respond with an ok
 				close(exchange);
 			}
+		} catch (InterruptedException e) {
+			LOGGER.error("Error adding image to queue.", e);
 		} finally {
 			// will always want to close the exchange
 			exchange.close();
