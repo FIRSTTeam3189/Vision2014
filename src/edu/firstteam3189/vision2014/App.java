@@ -5,10 +5,7 @@ import java.io.File;
 import team3189.library.Logger.Logger;
 
 public class App {
-	/**
-	 * The Logger for the App class
-	 */
-	public static final Logger LOGGER = new Logger(App.class);
+	private static final Logger LOGGER = new Logger(App.class);
 
 	/**
 	 * This method removes the passed in file.

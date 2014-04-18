@@ -36,7 +36,7 @@ public class Constants {
 	private static int GREEN_HIGH = 255;
 
 	private static int GREEN_LOW = 120;
-	private static final Logger logger = new Logger(Constants.class);
+	private static final Logger LOGGER = new Logger(Constants.class);
 
 	private static int RED_HIGH = 40;
 	private static int RED_LOW = 0;
@@ -57,13 +57,13 @@ public class Constants {
 		RECTANGLE_SAVE_LIMIT = Utility.getIntFromProperty("rectangle.save.limit", RECTANGLE_SAVE_LIMIT);
 		WRITING_PROCESSED_IMAGES = Utility.getIntFromProperty("writing.processed.images", WRITING_PROCESSED_IMAGES);
 
-		logger.info("RedLow: " + RED_LOW);
-		logger.info("blueLow: " + BLUE_LOW);
-		logger.info("greenLow: " + GREEN_LOW);
-		logger.info("redHigh: " + RED_HIGH);
-		logger.info("blueHigh: " + BLUE_HIGH);
-		logger.info("greenHigh: " + GREEN_HIGH);
-		logger.info("blur: " + BLUR);
-		logger.info("tolerance: " + TOLERANCE);
+		LOGGER.info("RedLow: " + RED_LOW);
+		LOGGER.info("blueLow: " + BLUE_LOW);
+		LOGGER.info("greenLow: " + GREEN_LOW);
+		LOGGER.info("redHigh: " + RED_HIGH);
+		LOGGER.info("blueHigh: " + BLUE_HIGH);
+		LOGGER.info("greenHigh: " + GREEN_HIGH);
+		LOGGER.info("blur: " + BLUR);
+		LOGGER.info("tolerance: " + TOLERANCE);
 	}
 }

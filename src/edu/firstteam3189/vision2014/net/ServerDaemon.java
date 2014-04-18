@@ -16,10 +16,7 @@ public class ServerDaemon extends Thread {
 	 * The port to listen for connections
 	 */
 	private static final String Address = "10.31.89.2";
-	/**
-	 * The Logger class for the ImageDaemon
-	 */
-	private static final Logger logger = new Logger(ServerDaemon.class);
+	private static final Logger LOGGER = new Logger(ServerDaemon.class);
 
 	private static final String NETWORK_COMMAND = "robot";
 
@@ -44,7 +41,7 @@ public class ServerDaemon extends Thread {
 		startClient();
 		while (table != null) {
 			if (table.isConnected()) {
-				// logger.debug("Table is available.");
+				// LOGGER.debug("Table is available.");
 				if (canReceiveMessage()) {
 					int command = receiveMessage();
 					switch (command) {
@@ -65,7 +62,7 @@ public class ServerDaemon extends Thread {
 						break;
 
 					default:
-						logger.error("Invalid command (ignored): " + command);
+						LOGGER.error("Invalid command (ignored): " + command);
 						break;
 					}
 				}

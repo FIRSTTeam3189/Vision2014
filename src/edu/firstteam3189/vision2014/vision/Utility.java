@@ -8,7 +8,7 @@ import java.util.Properties;
 import team3189.library.Logger.Logger;
 
 public class Utility {
-	private static final Logger logger = new Logger(Utility.class);
+	private static final Logger LOGGER = new Logger(Utility.class);
 	private static final Properties properties = new Properties();
 
 	static {
@@ -30,7 +30,7 @@ public class Utility {
 			// Get the value from the key and try to parse it into a double
 			value = Double.parseDouble(properties.getProperty(key, "" + defaultValue));
 		} catch (NumberFormatException e) {
-			logger.error("Invalid Double", e);
+			LOGGER.error("Invalid Double", e);
 		}
 		return value;
 	}
@@ -49,10 +49,10 @@ public class Utility {
 		int value = defaultValue;
 		try {
 			// Get the value from the key and try to parse it into an int...
-			logger.debug(key);
+			LOGGER.debug(key);
 			value = Integer.parseInt(properties.getProperty(key, "" + defaultValue));
 		} catch (NumberFormatException e) {
-			logger.error("Invalid value", e);
+			LOGGER.error("Invalid value", e);
 		}
 		return value;
 	}
@@ -84,9 +84,9 @@ public class Utility {
 		try {
 			properties.load(new FileInputStream("config.ini"));
 		} catch (FileNotFoundException e) {
-			logger.error("Properties not found...", e);
+			LOGGER.error("Properties not found...", e);
 		} catch (IOException e) {
-			logger.error("Properties failed to load...", e);
+			LOGGER.error("Properties failed to load...", e);
 		}
 	}
 }
