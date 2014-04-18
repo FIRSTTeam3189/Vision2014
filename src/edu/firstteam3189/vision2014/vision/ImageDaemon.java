@@ -1,111 +1,15 @@
 package edu.firstteam3189.vision2014.vision;
 
-import static com.googlecode.javacv.cpp.opencv_core.cvReleaseImage;
-import static com.googlecode.javacv.cpp.opencv_highgui.cvLoadImage;
-
 import java.awt.Dimension;
-import java.io.File;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import javax.swing.JFrame;
 
 import team3189.library.Logger.Logger;
 
 import com.googlecode.javacv.CanvasFrame;
-import com.googlecode.javacv.FFmpegFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 
-import edu.firstteam3189.vision2014.HttpImageServer;
-
 public class ImageDaemon extends Thread {
-	/**
-	 * This interface is used to abstract between active camera capture and passive camera capture.
-	 */
-	private interface Camera {
-		void close();
-
-		/**
-		 * This method gets the next available image to process.
-		 * 
-		 * @throws Exception
-		 */
-		IplImage getImage() throws Exception;
-
-		/**
-		 * This method is used to initialize the camera capture process.
-		 * 
-		 * @throws Exception
-		 */
-		void init() throws Exception;
-	}
-
-	/**
-	 * This class is used to determine what type of camera capture is happening.
-	 */
-	private class CameraCapture implements Camera {
-		/** The FFMpegFrameGrabber, Grabs the images from the camera. */
-		private FFmpegFrameGrabber grabber;
-
-		public CameraCapture() {
-			grabber = new FFmpegFrameGrabber("http://10.31.89.11/mjpg/video.mjpg");
-		}
-
-		@Override
-		public void close() {
-		}
-
-		@Override
-		public IplImage getImage() throws Exception {
-			return grabber.grab();
-		}
-
-		/**
-		 * This method is used to initialize the camera capture process.
-		 * 
-		 * @throws Exception
-		 */
-		@Override
-		public void init() throws Exception {
-			grabber.start();
-		}
-	}
-
-	/**
-	 * This class is used to capture images being broadcast by the camera.
-	 */
-	private class HttpServerCameraCapture implements Camera {
-		/** This member is the server that receives images from the camera. */
-		private HttpImageServer httpImageServer;
-
-		/** This member holds the list of images to be processed. */
-		private BlockingQueue<File> queueImages = new ArrayBlockingQueue<>(20);
-
-		@Override
-		public void close() {
-			httpImageServer.close();
-		}
-
-		@Override
-		public IplImage getImage() throws Exception {
-			File file = queueImages.take();
-
-			LOGGER.info("Processing image file: " + file);
-
-			return cvLoadImage(file.getAbsolutePath());
-		}
-
-		@Override
-		public void init() {
-			httpImageServer = new HttpImageServer(queueImages);
-		}
-	}
-
-	/**
-	 * The Logger class for the ImageDaemon
-	 */
-	public static final Logger logger = new Logger(ImageDaemon.class);
-
 	/**
 	 * The last processed results from the camera
 	 */
@@ -117,7 +21,7 @@ public class ImageDaemon extends Thread {
 	private boolean active = false;
 
 	/** This member holds the camera being used to capture the images. */
-	private Camera camera;
+	private CaptureBase camera;
 
 	/**
 	 * The Canvas Frame showing the processed contours
@@ -166,24 +70,21 @@ public class ImageDaemon extends Thread {
 				if (image != null) {
 					ImageProcessor imageProcessor = new ImageProcessor(image);
 
-					// Flip the image and process it. Then show frames on canvases.
-					// cvFlip(image, image, 1);
-
-					debug.setTitle("Camera is ready");
+					debug.setTitle("Original Image is ready");
 					debug.showImage(image);
 
-					canvas.setTitle("Camera is ready");
+					canvas.setTitle("Processed Image is ready");
 					canvas.showImage(imageProcessor.getProcessed());
 
-					cvReleaseImage(image);
+					camera.done(imageProcessor);
 				} else {
-					logger.info("Image is null!");
+					LOGGER.info("Image is null!");
 				}
 
 				lastProcess = size;
 			}
 		} catch (Exception e) {
-			logger.error("Error capturing image.", e);
+			LOGGER.error("Error capturing image.", e);
 		}
 		return size;
 	}
