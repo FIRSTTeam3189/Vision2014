@@ -50,7 +50,7 @@ public class ImageHandler implements HttpHandler {
 	 */
 	private static void setImageDirectory() {
 		Date now = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 		imageDirectory = new File("images", formatter.format(now));
 		imageDirectory.mkdirs();
 		LOGGER.info("Storing images in " + imageDirectory.getAbsolutePath());
@@ -107,7 +107,7 @@ public class ImageHandler implements HttpHandler {
 	 * @throws IOException
 	 */
 	private void close(HttpExchange exchange) throws IOException {
-		close(exchange, "");
+		close(exchange, null);
 	}
 
 	/**
@@ -120,9 +120,12 @@ public class ImageHandler implements HttpHandler {
 	 * @throws IOException
 	 */
 	private void close(HttpExchange exchange, String message) throws IOException {
-		exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, message.length());
+		// send a content length if a message was specified; otherwise, send -1
+		int contentLength = message != null ? message.length() : -1;
+		exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, contentLength);
 
-		if (message.length() > 0) {
+		// add output stream if there is something to return
+		if (contentLength > 0) {
 			// add the message to the body
 			OutputStreamWriter out = new OutputStreamWriter(exchange.getResponseBody());
 

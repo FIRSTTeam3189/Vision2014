@@ -14,14 +14,20 @@ import edu.firstteam3189.vision2014.net.NetworkTableAccess;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 public class ImageDaemon extends Thread {
-//	private static final String Address = "10.31.89.2";
+	public static final String NETWORK_OFF_CENTER = "offcenter";
+	public static final String NETWORK_OFF_CENTER_ON = "offcenteron";
+	// private static final String Address = "10.31.89.2";
 	/**
 	 * The last processed results from the camera
 	 */
 	private static int lastProcess = 0;
 	private static final Logger LOGGER = new Logger(ImageDaemon.class);
-	public static final String NETWORK_OFF_CENTER = "offcenter";
 	private static final String NETWORK_TABLE = "data";
+
+	public static void writeOffCenter(NetworkTable table, double offCenter) {
+		table.putNumber(NETWORK_OFF_CENTER, offCenter);
+		LOGGER.info("Writing offcenter value: " + Double.toString(offCenter));
+	}
 
 	/** This member holds a configuration element used to indicate if camera capture is active or passive. */
 	private boolean active = false;
@@ -101,11 +107,6 @@ public class ImageDaemon extends Thread {
 			LOGGER.error("Error capturing image.", e);
 		}
 		return size;
-	}
-
-	public static void writeOffCenter(NetworkTable table, double offCenter) {
-		table.putNumber(NETWORK_OFF_CENTER, offCenter);
-		LOGGER.info("Writing offcenter value: " + Double.toString(offCenter));
 	}
 
 	/**
