@@ -1,6 +1,7 @@
 package edu.firstteam3189.vision2014.vision;
 
 import java.awt.Dimension;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -9,13 +10,19 @@ import team3189.library.Logger.Logger;
 import com.googlecode.javacv.CanvasFrame;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
+
 public class ImageDaemon extends Thread {
+//	private static final String Address = "10.31.89.2";
+	private static final int IMAGE_WIDTH = 640;
+	private static final int IMAGE_WIDTH_HALF = IMAGE_WIDTH / 2;
 	/**
 	 * The last processed results from the camera
 	 */
 	private static int lastProcess = 0;
-
 	private static final Logger LOGGER = new Logger(ImageDaemon.class);
+	private static final String NETWORK_OFF_CENTER = "offcenter";
+	private static final String NETWORK_TABLE = "data";
 
 	/** This member holds a configuration element used to indicate if camera capture is active or passive. */
 	private boolean active = false;
@@ -36,7 +43,9 @@ public class ImageDaemon extends Thread {
 	/**
 	 * The Minimum dimensions of the canvas frames
 	 */
-	private Dimension minDim = new Dimension(640, 480);
+	private Dimension minDim = new Dimension(IMAGE_WIDTH, 480);
+
+	private NetworkTable table;
 
 	public ImageDaemon() {
 		super("Image Daemon");
@@ -76,6 +85,12 @@ public class ImageDaemon extends Thread {
 					canvas.setTitle("Processed Image is ready");
 					canvas.showImage(imageProcessor.getProcessed());
 
+					// feedback of where the center of the image is located
+					Double offcenter = getOffCenter(imageProcessor);
+					if (offcenter != null) {
+						table.putNumber(NETWORK_OFF_CENTER, offcenter.doubleValue());
+					}
+
 					camera.done(imageProcessor);
 				} else {
 					LOGGER.info("Image is null!");
@@ -94,6 +109,8 @@ public class ImageDaemon extends Thread {
 	 */
 	@Override
 	public void run() {
+		startNetworkClient();
+
 		// allocate the image capture processes
 		if (active) {
 			camera = new CameraCapture();
@@ -117,5 +134,30 @@ public class ImageDaemon extends Thread {
 	 */
 	public void setLastProcess(int lastProcess) {
 		ImageDaemon.lastProcess = lastProcess;
+	}
+
+	/**
+	 * This method returns a signed value of percentage of off centered.
+	 * 
+	 * @param imageProcessor
+	 *            ImageProcessor containing the latest image.
+	 */
+	private Double getOffCenter(ImageProcessor imageProcessor) {
+		Double percentage = null;
+
+		List<ContourDetail> rectangles = imageProcessor.getRectangles();
+		if (rectangles != null && !rectangles.isEmpty()) {
+			// only use the first one in the list
+			ContourDetail rectangle = rectangles.get(0);
+			percentage = Double.valueOf((double) (IMAGE_WIDTH_HALF - rectangle.getCenter().getX()) / (double) IMAGE_WIDTH);
+		}
+
+		return percentage;
+	}
+
+	private void startNetworkClient() {
+		// NetworkTable.setClientMode();
+		// NetworkTable.setIPAddress(Address);
+		table = NetworkTable.getTable(NETWORK_TABLE);
 	}
 }

@@ -138,11 +138,6 @@ class HttpServerCameraCapture extends CaptureBase {
 				out.write(Integer.toString(index++));
 				out.newLine();
 
-//				out.write("Bounding Rectangle: ");
-//				out.write(detail.getBoundingUpperLeft().toString());
-//				out.write(" ");
-//				out.write(detail.getBoundingLowerRight().toString());
-//				out.newLine();
 				out.write(detail.toString());
 
 				Iterator<Point> iterPoints = detail.getPoints();

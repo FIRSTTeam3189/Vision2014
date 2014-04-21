@@ -19,10 +19,42 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 public class ImageHandler implements HttpHandler {
+	private static boolean collectionActive = false;
 	private static final String HEADER_FILENAME = "Content-disposition";
+	private static File imageDirectory;
 	private static final Logger LOGGER = new Logger(ImageHandler.class);
 
-	private File imageDirectory;
+	/**
+	 * This method returns if the collection is currently active.
+	 */
+	public static boolean isCollectionActive() {
+		return collectionActive;
+	}
+
+	/**
+	 * This method sets the state of the image handler with respect to collection state.
+	 * 
+	 * @param collectionActive
+	 *            boolean indicating if the system should collect images.
+	 */
+	public static void setCollectionActive(boolean collectionActive) {
+		if (collectionActive && !ImageHandler.collectionActive) {
+			// enabling, so setup the image directory
+			setImageDirectory();
+		}
+		ImageHandler.collectionActive = collectionActive;
+	}
+
+	/**
+	 * This method sets the image directory based on the current timestamp.
+	 */
+	private static void setImageDirectory() {
+		Date now = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+		imageDirectory = new File("images", formatter.format(now));
+		imageDirectory.mkdirs();
+		LOGGER.info("Storing images in " + imageDirectory.getAbsolutePath());
+	}
 
 	/** This member holds the list of images to be processed. */
 	private BlockingQueue<File> queueImages;
@@ -34,11 +66,6 @@ public class ImageHandler implements HttpHandler {
 	 */
 	public ImageHandler(BlockingQueue<File> queueImages) {
 		this.queueImages = queueImages;
-		Date now = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
-		imageDirectory = new File("images", formatter.format(now));
-		imageDirectory.mkdirs();
-		LOGGER.info("Storing images in " + imageDirectory.getAbsolutePath());
 	}
 
 	/**
@@ -54,24 +81,11 @@ public class ImageHandler implements HttpHandler {
 				// close the exchange and redirect to post
 				close(exchange, "Please POST to this site!");
 			} else if ("POST".equals(requestMethod)) {
-				// save off the image
-				Headers headers = exchange.getRequestHeaders();
-				List<String> fullFileNames = headers.get(HEADER_FILENAME);
-
-				if (fullFileNames != null && !fullFileNames.isEmpty()) {
-					// grab the filename
-					String fullFileName = fullFileNames.get(0);
-					String fileName = fullFileName.substring(fullFileName.indexOf('"') + 1,
-							fullFileName.lastIndexOf('"'));
-					File imageFile = new File(imageDirectory, fileName);
-					LOGGER.info("Creating an image file of name: " + imageFile + " on thread "
-							+ Thread.currentThread().getName());
-
-					// write the image to a file
-					InputStream body = exchange.getRequestBody();
-					copy(body, imageFile);
-
-					queueImages.put(imageFile);
+				if (collectionActive) {
+					// save off the image
+					saveImage(exchange);
+				} else {
+//					LOGGER.debug("Ignoring file.");
 				}
 
 				close(exchange, "Finished processing.");
@@ -144,6 +158,34 @@ public class ImageHandler implements HttpHandler {
 		} finally {
 			inputStream.close();
 			outputStream.close();
+		}
+	}
+
+	/**
+	 * This method saves off the image from the request.
+	 * 
+	 * @param exchange
+	 *            HttpExchange associated with the request.
+	 * @throws InterruptedException
+	 * @throws IOException
+	 */
+	private void saveImage(HttpExchange exchange) throws InterruptedException, IOException {
+		Headers headers = exchange.getRequestHeaders();
+		List<String> fullFileNames = headers.get(HEADER_FILENAME);
+
+		if (fullFileNames != null && !fullFileNames.isEmpty()) {
+			// grab the filename
+			String fullFileName = fullFileNames.get(0);
+			String fileName = fullFileName.substring(fullFileName.indexOf('"') + 1, fullFileName.lastIndexOf('"'));
+			File imageFile = new File(imageDirectory, fileName);
+			LOGGER.info("Creating an image file of name: " + imageFile + " on thread "
+					+ Thread.currentThread().getName());
+
+			// write the image to a file
+			InputStream body = exchange.getRequestBody();
+			copy(body, imageFile);
+
+			queueImages.put(imageFile);
 		}
 	}
 }

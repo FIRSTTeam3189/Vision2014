@@ -7,6 +7,9 @@ import edu.firstteam3189.vision2014.Manager;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 public class ServerDaemon extends Thread {
+	public static final int REQUEST_COLLECT_LAST = 23;
+	public static final int REQUEST_COLLECT_START = 21;
+	public static final int REQUEST_COLLECT_STOP = 22;
 	public static final int REQUEST_DEATH_FROM_ROBOT = 666;
 	public static final int REQUEST_DISCONNECT_FROM_ROBOT = 14;
 	public static final int REQUEST_NOTHING = 99;
@@ -17,11 +20,8 @@ public class ServerDaemon extends Thread {
 	 */
 	private static final String Address = "10.31.89.2";
 	private static final Logger LOGGER = new Logger(ServerDaemon.class);
-
 	private static final String NETWORK_COMMAND = "robot";
-
 	private static final String NETWORK_TABLE = "data";
-
 	private NetworkTable table;
 
 	/**
@@ -61,10 +61,25 @@ public class ServerDaemon extends Thread {
 					case REQUEST_NOTHING:
 						break;
 
+					case REQUEST_COLLECT_START:
+						ImageHandler.setCollectionActive(true);
+						break;
+
+					case REQUEST_COLLECT_STOP:
+						ImageHandler.setCollectionActive(false);
+						break;
+
+					case REQUEST_COLLECT_LAST:
+
+						break;
 					default:
 						LOGGER.error("Invalid command (ignored): " + command);
 						break;
 					}
+				}
+
+				if (ImageHandler.isCollectionActive()) {
+
 				}
 			} else {
 				table = NetworkTable.getTable(NETWORK_TABLE);

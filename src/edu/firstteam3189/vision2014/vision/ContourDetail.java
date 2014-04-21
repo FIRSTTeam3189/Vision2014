@@ -13,7 +13,7 @@ import com.googlecode.javacv.cpp.opencv_core.CvRect;
  * This class holds the details for any given found object.
  */
 public class ContourDetail {
-	private static final double ACCEPTABLE_TOLERANCE = 0.70;
+	private static final double ACCEPTABLE_TOLERANCE = 2.00;
 	private static final double STRIP_RATIO = 4.0 / 32.0;
 	private Point boundingLowerRight;
 	private Point boundingUpperLeft;
