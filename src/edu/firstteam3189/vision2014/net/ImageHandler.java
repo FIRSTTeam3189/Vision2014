@@ -84,8 +84,6 @@ public class ImageHandler implements HttpHandler {
 				if (collectionActive) {
 					// save off the image
 					saveImage(exchange);
-				} else {
-//					LOGGER.debug("Ignoring file.");
 				}
 
 				close(exchange, "Finished processing.");

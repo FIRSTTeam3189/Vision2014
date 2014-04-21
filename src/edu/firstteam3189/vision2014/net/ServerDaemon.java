@@ -4,10 +4,10 @@ import java.io.IOException;
 
 import team3189.library.Logger.Logger;
 import edu.firstteam3189.vision2014.Manager;
+import edu.firstteam3189.vision2014.vision.ImageDaemon;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 public class ServerDaemon extends Thread {
-	public static final int REQUEST_COLLECT_LAST = 23;
 	public static final int REQUEST_COLLECT_START = 21;
 	public static final int REQUEST_COLLECT_STOP = 22;
 	public static final int REQUEST_DEATH_FROM_ROBOT = 666;
@@ -15,10 +15,6 @@ public class ServerDaemon extends Thread {
 	public static final int REQUEST_NOTHING = 99;
 	public static final int REQUEST_NUMBER_OF_HOTZONES_FROM_ROBOT = 69;
 
-	/**
-	 * The port to listen for connections
-	 */
-	private static final String Address = "10.31.89.2";
 	private static final Logger LOGGER = new Logger(ServerDaemon.class);
 	private static final String NETWORK_COMMAND = "robot";
 	private static final String NETWORK_TABLE = "data";
@@ -38,7 +34,7 @@ public class ServerDaemon extends Thread {
 	 */
 	@Override
 	public void run() {
-		startClient();
+		table = NetworkTableAccess.getInstance().getTable(NETWORK_TABLE);
 		while (table != null) {
 			if (table.isConnected()) {
 				// LOGGER.debug("Table is available.");
@@ -62,24 +58,19 @@ public class ServerDaemon extends Thread {
 						break;
 
 					case REQUEST_COLLECT_START:
+						ImageDaemon.writeOffCenter(table, 0.0);
 						ImageHandler.setCollectionActive(true);
 						break;
 
 					case REQUEST_COLLECT_STOP:
 						ImageHandler.setCollectionActive(false);
+						ImageDaemon.writeOffCenter(table, 0.0);
 						break;
 
-					case REQUEST_COLLECT_LAST:
-
-						break;
 					default:
 						LOGGER.error("Invalid command (ignored): " + command);
 						break;
 					}
-				}
-
-				if (ImageHandler.isCollectionActive()) {
-
 				}
 			} else {
 				table = NetworkTable.getTable(NETWORK_TABLE);
@@ -117,6 +108,9 @@ public class ServerDaemon extends Thread {
 
 		if (canReceiveMessage()) {
 			message = (int) table.getNumber(NETWORK_COMMAND, REQUEST_NOTHING);
+			
+			// got the message, so replace it with the do nothing request so as not to repeat the request
+			table.putNumber(NETWORK_COMMAND, REQUEST_NOTHING);
 		}
 
 		return message;
@@ -133,11 +127,5 @@ public class ServerDaemon extends Thread {
 		if (table != null) {
 			table.putNumber("client", message);
 		}
-	}
-
-	private void startClient() {
-		NetworkTable.setClientMode();
-		NetworkTable.setIPAddress(Address);
-		table = NetworkTable.getTable(NETWORK_TABLE);
 	}
 }

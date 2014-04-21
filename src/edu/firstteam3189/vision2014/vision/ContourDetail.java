@@ -14,11 +14,14 @@ import com.googlecode.javacv.cpp.opencv_core.CvRect;
  */
 public class ContourDetail {
 	private static final double ACCEPTABLE_TOLERANCE = 2.00;
+	private static final int IMAGE_WIDTH = 640;
+	private static final int IMAGE_WIDTH_HALF = IMAGE_WIDTH / 2;
 	private static final double STRIP_RATIO = 4.0 / 32.0;
 	private Point boundingLowerRight;
 	private Point boundingUpperLeft;
 	private Point center;
 	private List<Point> contourPoints = new ArrayList<Point>();
+	private double offCenter;
 	private double sizeRatio;
 
 	public void addContourPoint(Point point) {
@@ -35,6 +38,10 @@ public class ContourDetail {
 
 	public Point getCenter() {
 		return center;
+	}
+
+	public Double getOffCenter() {
+		return offCenter;
 	}
 
 	public Iterator<Point> getPoints() {
@@ -64,6 +71,7 @@ public class ContourDetail {
 		sizeRatio = (double) boundingRect.width() / (double) boundingRect.height();
 		center = new Point((boundingUpperLeft.getX() + boundingLowerRight.getX()) / 2,
 				(boundingUpperLeft.getY() + boundingLowerRight.getY()) / 2);
+		offCenter = Double.valueOf((double) (center.getX() - IMAGE_WIDTH_HALF) / (double) IMAGE_WIDTH);
 	}
 
 	@Override
@@ -76,6 +84,7 @@ public class ContourDetail {
 				.append(boundingLowerRight.getY() - boundingUpperLeft.getY()).append(" (").append(sizeRatio)
 				.append(")").append(System.lineSeparator());
 		buffer.append("Center: ").append(center).append(System.lineSeparator());
+		buffer.append("Off Center: ").append(offCenter).append(System.lineSeparator());
 
 		return buffer.toString();
 	}

@@ -10,18 +10,17 @@ import team3189.library.Logger.Logger;
 import com.googlecode.javacv.CanvasFrame;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 
+import edu.firstteam3189.vision2014.net.NetworkTableAccess;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 public class ImageDaemon extends Thread {
 //	private static final String Address = "10.31.89.2";
-	private static final int IMAGE_WIDTH = 640;
-	private static final int IMAGE_WIDTH_HALF = IMAGE_WIDTH / 2;
 	/**
 	 * The last processed results from the camera
 	 */
 	private static int lastProcess = 0;
 	private static final Logger LOGGER = new Logger(ImageDaemon.class);
-	private static final String NETWORK_OFF_CENTER = "offcenter";
+	public static final String NETWORK_OFF_CENTER = "offcenter";
 	private static final String NETWORK_TABLE = "data";
 
 	/** This member holds a configuration element used to indicate if camera capture is active or passive. */
@@ -43,7 +42,7 @@ public class ImageDaemon extends Thread {
 	/**
 	 * The Minimum dimensions of the canvas frames
 	 */
-	private Dimension minDim = new Dimension(IMAGE_WIDTH, 480);
+	private Dimension minDim = new Dimension(640, 480);
 
 	private NetworkTable table;
 
@@ -88,7 +87,7 @@ public class ImageDaemon extends Thread {
 					// feedback of where the center of the image is located
 					Double offcenter = getOffCenter(imageProcessor);
 					if (offcenter != null) {
-						table.putNumber(NETWORK_OFF_CENTER, offcenter.doubleValue());
+						writeOffCenter(table, offcenter.doubleValue());
 					}
 
 					camera.done(imageProcessor);
@@ -104,12 +103,17 @@ public class ImageDaemon extends Thread {
 		return size;
 	}
 
+	public static void writeOffCenter(NetworkTable table, double offCenter) {
+		table.putNumber(NETWORK_OFF_CENTER, offCenter);
+		LOGGER.info("Writing offcenter value: " + Double.toString(offCenter));
+	}
+
 	/**
 	 * Processes images from the camera
 	 */
 	@Override
 	public void run() {
-		startNetworkClient();
+		table = NetworkTableAccess.getInstance().getTable(NETWORK_TABLE);
 
 		// allocate the image capture processes
 		if (active) {
@@ -149,15 +153,9 @@ public class ImageDaemon extends Thread {
 		if (rectangles != null && !rectangles.isEmpty()) {
 			// only use the first one in the list
 			ContourDetail rectangle = rectangles.get(0);
-			percentage = Double.valueOf((double) (IMAGE_WIDTH_HALF - rectangle.getCenter().getX()) / (double) IMAGE_WIDTH);
+			percentage = rectangle.getOffCenter();
 		}
 
 		return percentage;
-	}
-
-	private void startNetworkClient() {
-		// NetworkTable.setClientMode();
-		// NetworkTable.setIPAddress(Address);
-		table = NetworkTable.getTable(NETWORK_TABLE);
 	}
 }
